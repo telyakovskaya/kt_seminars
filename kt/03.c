@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
-#define bufsize 512
+#define BUFSIZE 512
 int main(int argc, char *argv[]){
 	struct stat fmode;
 	lstat (argv[1], &fmode);
