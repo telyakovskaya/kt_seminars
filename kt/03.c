@@ -2,36 +2,57 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
 #define BUFSIZE 512
 int main(int argc, char *argv[]){
+	if (argc  != 3){
+                return 1;
+	}
 	struct stat fmode;
 	lstat (argv[1], &fmode);
-	if (argc  != 2){
-		return 1;};
-	if ((fmode.st_mode & S_IFMT) != S_IFREG){
+	if (!S_ISREG(fmode.st_mode)){
 		printf("File is not regular");
-		return 1;};
-        char text[bufsize];	
+		return 1;
+	}
+        char text[BUFSIZE];	
 	int fd1 = open(argv[1], O_RDONLY);
 	if (fd1 < 0){
-		printf("Error");
-		return 1;};
-	int fd2 = open(argv[2], O_RDWR | O_CREAT);
+		perror("Failed to open source file");
+		return 1;
+	}
+	int fd2 = open(argv[2], O_WRONLY | O_CREAT, 0600);
 	if (fd2 < 0 ){
-		printf("Error");
-		return 1;};
-	while (read(fd1, text, bufsize)!=0){
-            if(write(fd2, text, bufsize) < 0){
-                printf("Error");
-                return 1;};	};
-	close(fd1);
+		printf("Failed to open destination file for working");
+		return 1;
+	}
+	while (1) {
+		ssize_t count_read = read(fd1, text, sizeof(text));
+		if (count_read == -1) {
+			perror("Failed to read\n");
+			return 6;
+		}
+		if (count_read == 0) {
+			break;
+		}
+                ssize_t i = 0;
+		while (i < count_read) {
+			ssize_t count_write = write(fd2, text+i, BUFSIZE-i);
+			if (count_write == -1) {
+				perror("Failed to write");
+				return 7;
+			}
+			i += count_write;
+		}
+	}
+	int result = 0;
 	if (close(fd1) < 0){
-		printf("Error");
-		return 1;};
-	close(fd2);
+		result = errno;
+		perror("Failed to close source file"); 
+	}
 	if (close(fd2) < 0){
-		printf("Error");
-		return 1;};
-	return 0;
+		result = errno;
+		perror("Failed to close destination file");
+	}
+	return result;
 }
 	    

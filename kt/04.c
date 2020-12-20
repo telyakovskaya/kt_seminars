@@ -5,10 +5,10 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define bufsize 512
+#define BUFSIZE 512
 
 int main(int argc, char *argv[]) {
-	char buf[bufsize];
+	char buf[BUFSIZE];
 	ssize_t nbytes, nbytes_w;
 	struct stat stat_buf;
         if (lstat (argv[1], &stat_buf) == -1) {
@@ -30,10 +30,10 @@ int main(int argc, char *argv[]) {
         }
 	int fildes_w = open(argv[2], O_WRONLY| O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
         if (fildes_w == -1) {
-                perror("Cannot open file to write\n");
+                perror("Can't open file to write\n");
                 return 1;
         }
-	while ((nbytes = read(fildes_r, buf, bufsize)) > 0) {
+	while ((nbytes = read(fildes_r, buf, BUFSIZE)) > 0) {
 		while (nbytes) {
 			nbytes_w = write(fildes_w, buf, nbytes);
 			nbytes = nbytes - nbytes_w;
@@ -60,12 +60,6 @@ int main(int argc, char *argv[]) {
         }
         return 0;
 
-}
-
-
-
-
-
-               
+}              
         return 0;
 }

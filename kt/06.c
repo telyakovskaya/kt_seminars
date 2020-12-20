@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
 	DIR* dirp;
 	if (argc != 2) {
-		printf("Incurrent number of arguments\n");
+		printf("Incorrect number of arguments\n");
 		return 1;
 	}
 	if ((dirp = opendir(argv[1])) == NULL) {
