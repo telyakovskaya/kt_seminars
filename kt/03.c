@@ -6,10 +6,14 @@
 #define BUFSIZE 512
 int main(int argc, char *argv[]){
 	if (argc  != 3){
+		printf ("Usage: %s some.file\n", argv[0]);
                 return 1;
 	}
 	struct stat fmode;
-	lstat (argv[1], &fmode);
+	if (lstat (argv[1], &fmode) == -1) {
+                perror("Failed to lstat");
+                return 2;
+        }
 	if (!S_ISREG(fmode.st_mode)){
 		printf("File is not regular");
 		return 1;
@@ -22,7 +26,7 @@ int main(int argc, char *argv[]){
 	}
 	int fd2 = open(argv[2], O_WRONLY | O_CREAT, 0600);
 	if (fd2 < 0 ){
-		printf("Failed to open destination file for working");
+		perror("Failed to open destination file");
 		return 1;
 	}
 	while (1) {

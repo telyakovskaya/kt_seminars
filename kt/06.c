@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
 	DIR* dirp;
 	if (argc != 2) {
-		printf("Incorrect number of arguments\n");
+		printf ("Usage: %s some.file\n", argv[0]);
 		return 1;
 	}
 	if ((dirp = opendir(argv[1])) == NULL) {
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 		errno=0;
 		if (( dir = readdir(dirp)) == NULL) {
                 	if (errno) {
-				perror("failed to fetch next directory entry");
+				perror("Failed to fetch next directory entry");
 			}
 		}
 		printf("File type: ");
@@ -31,28 +31,28 @@ int main(int argc, char *argv[]) {
         	                return 1;
 	                }
 	        	switch (stat_buf.st_mode & S_IFMT) {
-        			case S_IFBLK: printf("block device "); break;
-       	   		        case S_IFCHR: printf("character device "); break;
-          			case S_IFDIR: printf("directory "); break;
-         			case S_IFIFO: printf("FIFO/pipe "); break;
-	        		case S_IFLNK: printf("symlink "); break;
-	        		case S_IFREG: printf("regular file "); break;
-	        		case S_IFSOCK: printf("socket "); break;
-	        		default: printf("unknown "); break;
+        			case S_IFBLK: printf("block device"); break;
+       	   		        case S_IFCHR: printf("character device"); break;
+          			case S_IFDIR: printf("directory"); break;
+         			case S_IFIFO: printf("FIFO/pipe"); break;
+	        		case S_IFLNK: printf("symlink"); break;
+	        		case S_IFREG: printf("regular file"); break;
+	        		case S_IFSOCK: printf("socket"); break;
+	        		default: printf("unknown"); break;
 	        	}
 		}
 	       	else {
 			switch (dir->d_type) {
-				case DT_BLK: printf("block device "); break;
-				case DT_DIR: printf("directory "); break;
-				case DT_CHR: printf("character device "); break;
-				case DT_FIFO: printf("FIFO/pipe "); break;
-                                case DT_LNK: printf("symlink "); break;
-				case DT_REG: printf("regular file "); break;
-				case DT_SOCK: printf("socket "); break;
+				case DT_BLK: printf("block device"); break;
+				case DT_DIR: printf("directory"); break;
+				case DT_CHR: printf("character device"); break;
+				case DT_FIFO: printf("FIFO/pipe"); break;
+                                case DT_LNK: printf("symlink"); break;
+				case DT_REG: printf("regular file"); break;
+				case DT_SOCK: printf("socket"); break;
 			}
 		}
-		printf("Name: %s \n", dir->d_name);
+		printf(" Name: %s \n", dir->d_name);
 
         }
         if (closedir(dirp) != 0) {

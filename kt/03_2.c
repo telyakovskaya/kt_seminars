@@ -2,38 +2,41 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
-#define bufsize 512
+#include <errno.h>
+#define BUFSIZE 512
 int main(int argc, char *argv[]){
         struct stat fmode;
         lstat (argv[1], &fmode);
         if (argc  != 2){
+		printf ("Usage: %s some.file\n", argv[0]);
                 return 1;};
-        if ((fmode.st_mode & S_IFMT) != S_IFREG){
+        if (!S_ISREG(fmode.st_mode)){
                 printf("File is not regular");
                 return 1;};
-        char text[bufsize];
+        char text[BUFSIZE];
         int fd1 = open(argv[1], O_RDONLY);
         if (fd1 < 0){
-                printf("Error");
+                perror("Can't open file to read\n");
                 return 1;};
-        int fd2 = open(argv[2], O_RDWR | O_CREAT);
+        int fd2 = open(argv[2], O_RDWR | O_CREAT | 0600);
         if (fd2 < 0 ){
-                printf("Error");
+                perror("Can't open file to write\n");
                 return 1;};
 	int  ofst = 0;
-        while (pread(fd1, text, bufsize, ofst)!=0){
-            if(pwrite(fd2, text, bufsize, ofst) < 0){
-                printf("Error");
+        while (pread(fd1, text, BUFSIZE, ofst)!=0){
+            if(pwrite(fd2, text, BUFSIZE, ofst) < 0){
+                perror("Error with copying");
                 return 1;};
             ofst+= 512;	};
-        close(fd1);
+        int result = 0;
         if (close(fd1) < 0){
-                printf("Error");
-                return 1;};
-        close(fd2);
+                result = errno;
+                perror("Failed to close source file");
+        }
         if (close(fd2) < 0){
-                printf("Error");
-                return 1;};
-        return 0;
+                result = errno;
+                perror("Failed to close destination file");
+        }
+        return result;
 }
 

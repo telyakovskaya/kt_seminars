@@ -8,58 +8,65 @@
 #define BUFSIZE 512
 
 int main(int argc, char *argv[]) {
-	char buf[BUFSIZE];
+	if (argc != 3) {
+        	printf ("Usage: %s some.file\n", argv[0]);
+                return 1;
+        }
+	char text[BUFSIZE];
 	ssize_t nbytes, nbytes_w;
 	struct stat stat_buf;
         if (lstat (argv[1], &stat_buf) == -1) {
-                perror("Error with file to copy");
+                perror("Failed to lstat");
                 return 2;
         }
-	if (((stat_buf.st_mode) & (S_IFMT)) != S_IFREG) {
+	if (!S_ISREG(stat_buf.st_mode)) {
 		printf("File to copy is not regular file\n");
 		return 1;
 	}
-        if (argc != 3) {
-                printf ("Incorrect usage\n");
-                return 1;
-        }
-        int fildes_r = open(argv[1], O_RDONLY);
-        if (fildes_r == -1) {
+        int fd1 = open(argv[1], O_RDONLY);
+        if (fd1 == -1) {
                 perror("Can't open file to read\n");
                 return 1;
         }
-	int fildes_w = open(argv[2], O_WRONLY| O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-        if (fildes_w == -1) {
+	int fd2 = open(argv[2], O_WRONLY| O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+        if (fd2 == -1) {
                 perror("Can't open file to write\n");
                 return 1;
         }
-	while ((nbytes = read(fildes_r, buf, BUFSIZE)) > 0) {
-		while (nbytes) {
-			nbytes_w = write(fildes_w, buf, nbytes);
-			nbytes = nbytes - nbytes_w;
-		}
-	}
-	int mode = fchmod(fildes_w, stat_buf.st_mode);
-	if (mode != 0) {
+	while (1) {
+                ssize_t count_read = read(fd1, text, sizeof(text));
+                if (count_read == -1) {
+                        perror("Failed to read\n");
+                        return 6;
+                }
+                if (count_read == 0) {
+                        break;
+                }
+                ssize_t i = 0;
+                while (i < count_read) {
+                        ssize_t count_write = write(fd2, text+i, BUFSIZE-i);
+                        if (count_write == -1) {
+                                perror("Failed to write");
+                                return 7;
+                        }
+                        i += count_write;
+                }
+        }
+	if (fchmod(fildes_w, stat_buf.st_mode) != 0) {
 		perror("Error with copying meta data");
 	}
 	struct timespec times[2] = {stat_buf.st_atim, stat_buf.st_mtim};
-	int time = futimens(fildes_w, times);
-	if (time != 0) {
+	if (futimens(fd2, times) != 0) {
 		perror("Error with copying time");
 	}
-        int cfildes_r = close(fildes_r);
-        if (cfildes_r != 0) {
-                printf ("Unsucessful closing\n");
-                return 1;
+	int result = 0;
+        if (close(fd1) < 0){
+                result = errno;
+                perror("Failed to close source file");
         }
-	int cfildes_w = close(fildes_w);
-        if (cfildes_w != 0) {
-                printf ("Unsucessful closing\n");
-                return 1;
+        if (close(fd2) < 0){
+                result = errno;
+                perror("Failed to close destination file");
         }
-        return 0;
-
+        return result;
 }              
-        return 0;
-}

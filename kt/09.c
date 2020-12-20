@@ -6,14 +6,14 @@ int main(int argc, char* argv[]) {
         	printf ("Usage: %s [path]\n", argv[0]);
        	        return 1;
        	}
-       	struct statfs buf;
-	if ((statfs(argv[1], &buf)) == -1) {
-		printf("Failed to statfs");
+       	struct statvfs buf;
+	if ((statvfs(argv[1], &buf)) == -1) {
+		printf("Failed to statvfs");
 		return 1;
 	}
-	printf("Total: %lu \n",buf.f_blocks * buf.f_bsize);
-	printf("Available: %lu\n", buf.f_bavail * buf.f_bsize);
-	printf("Free: %lu\n", buf.f_bfree * buf.f_bsize);
-	printf("Used: %lu\n",buf.f_blocks * buf.f_bsize - buf.f_bfree * buf.f_bsize);
+	printf("Total: %lu \n",buf.f_blocks * buf.f_frsize);
+	printf("Available: %lu\n", buf.f_bavail * buf.f_frsize);
+	printf("Free: %lu\n", buf.f_bfree * buf.f_frsize);
+	printf("Used: %lu\n",buf.f_blocks * buf.f_frsize - buf.f_bfree * buf.f_frsize);
 	return 0;
 }
